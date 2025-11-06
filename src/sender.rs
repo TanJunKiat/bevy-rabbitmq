@@ -1,10 +1,7 @@
 //! Sending Bevy events to RabbitMQ
 
 use bevy::prelude::*;
-use lapin::{
-    options::BasicPublishOptions,
-    BasicProperties,
-};
+use lapin::{options::BasicPublishOptions, BasicProperties};
 use serde::Serialize;
 use tokio::sync::mpsc;
 
@@ -15,7 +12,7 @@ use crate::{PublishOptions, RabbitMqConfig, RabbitMqConnection, RabbitMqError};
 pub struct SendToRabbitMq {
     /// The message payload (will be serialized to JSON)
     pub payload: String,
-    
+
     /// Publishing options
     pub options: PublishOptions,
 }
@@ -106,11 +103,11 @@ pub fn start_publishing(
                     .unwrap_or(&config_clone.default_routing_key);
 
                 let mut properties = BasicProperties::default();
-                
+
                 if options.persistent {
                     properties = properties.with_delivery_mode(2);
                 }
-                
+
                 if let Some(priority) = options.priority {
                     properties = properties.with_priority(priority);
                 }
@@ -126,7 +123,10 @@ pub fn start_publishing(
                     .await
                 {
                     Ok(_) => {
-                        debug!("Published message to exchange: {}, routing_key: {}", exchange, routing_key);
+                        debug!(
+                            "Published message to exchange: {}, routing_key: {}",
+                            exchange, routing_key
+                        );
                     }
                     Err(e) => {
                         error!("Failed to publish message: {}", e);
@@ -145,10 +145,7 @@ pub fn start_publishing(
 }
 
 /// System that handles SendToRabbitMq events
-pub fn send_messages(
-    mut events: EventReader<SendToRabbitMq>,
-    sender: Res<RabbitMqSender>,
-) {
+pub fn send_messages(mut events: EventReader<SendToRabbitMq>, sender: Res<RabbitMqSender>) {
     for event in events.read() {
         if let Err(e) = sender.send(event.payload.clone(), event.options.clone()) {
             error!("Failed to queue message for sending: {}", e);

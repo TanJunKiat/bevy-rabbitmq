@@ -24,30 +24,27 @@ impl RabbitMqConnection {
     /// Connect to RabbitMQ using the provided configuration
     pub async fn connect(&self, config: &RabbitMqConfig) -> Result<(), RabbitMqError> {
         info!("Connecting to RabbitMQ at {}", config.uri);
-        
+
         let connection = Connection::connect(&config.uri, ConnectionProperties::default())
             .await
             .map_err(|e| RabbitMqError::ConnectionError(e.to_string()))?;
 
         info!("Successfully connected to RabbitMQ");
-        
+
         let mut inner = self.inner.write().await;
         *inner = Some(connection);
-        
+
         Ok(())
     }
-
-
 
     /// Get connection status and create a new channel if connected
     pub async fn create_channel(&self) -> Result<lapin::Channel, RabbitMqError> {
         let inner = self.inner.read().await;
         match &*inner {
-            Some(conn) => {
-                conn.create_channel()
-                    .await
-                    .map_err(|e| RabbitMqError::ChannelError(e.to_string()))
-            }
+            Some(conn) => conn
+                .create_channel()
+                .await
+                .map_err(|e| RabbitMqError::ChannelError(e.to_string())),
             None => Err(RabbitMqError::ConnectionError("Not connected".to_string())),
         }
     }
@@ -78,10 +75,7 @@ impl Default for RabbitMqConnection {
 }
 
 /// System that initializes the RabbitMQ connection
-pub fn initialize_connection(
-    mut commands: Commands,
-    config: Res<RabbitMqConfig>,
-) {
+pub fn initialize_connection(mut commands: Commands, config: Res<RabbitMqConfig>) {
     let connection = RabbitMqConnection::new();
     let config_clone = config.clone();
     let connection_clone = connection.clone();
@@ -98,11 +92,9 @@ pub fn initialize_connection(
 }
 
 /// System that checks connection status
-pub fn check_connection_status(
-    connection: Res<RabbitMqConnection>,
-) {
+pub fn check_connection_status(connection: Res<RabbitMqConnection>) {
     let connection_clone = connection.clone();
-    
+
     tokio::spawn(async move {
         if !connection_clone.is_connected().await {
             warn!("RabbitMQ connection lost");

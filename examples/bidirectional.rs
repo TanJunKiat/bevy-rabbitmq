@@ -22,10 +22,7 @@ fn main() {
             ..Default::default()
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (
-            receive_messages,
-            send_periodic_messages,
-        ))
+        .add_systems(Update, (receive_messages, send_periodic_messages))
         .run();
 }
 
@@ -47,7 +44,7 @@ fn receive_messages(mut events: EventReader<RabbitMqMessage>) {
     for msg in events.read() {
         info!("📨 Received from RabbitMQ:");
         info!("   Payload: {}", msg.payload);
-        
+
         // Try to parse as our custom message type
         if let Ok(parsed) = serde_json::from_str::<MyMessage>(&msg.payload) {
             info!("   Parsed message: {:?}", parsed);

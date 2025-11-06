@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Plugin that integrates RabbitMQ with Bevy
-/// 
+///
 /// This plugin provides:
 /// - Connection management to RabbitMQ
 /// - Receiving messages from RabbitMQ as Bevy events
@@ -54,18 +54,20 @@ impl Plugin for RabbitMqPlugin {
             .add_event::<SendToRabbitMq>();
 
         // Add startup systems
-        app.add_systems(Startup, (
-            initialize_connection,
-            start_consuming.after(initialize_connection),
-            start_publishing.after(initialize_connection),
-        ));
+        app.add_systems(
+            Startup,
+            (
+                initialize_connection,
+                start_consuming.after(initialize_connection),
+                start_publishing.after(initialize_connection),
+            ),
+        );
 
         // Add update systems
-        app.add_systems(Update, (
-            receive_messages,
-            send_messages,
-            check_connection_status,
-        ));
+        app.add_systems(
+            Update,
+            (receive_messages, send_messages, check_connection_status),
+        );
     }
 }
 
@@ -80,15 +82,15 @@ impl Plugin for RabbitMqReceiverPlugin {
 
         app.add_event::<RabbitMqMessage>();
 
-        app.add_systems(Startup, (
-            initialize_connection,
-            start_consuming.after(initialize_connection),
-        ));
+        app.add_systems(
+            Startup,
+            (
+                initialize_connection,
+                start_consuming.after(initialize_connection),
+            ),
+        );
 
-        app.add_systems(Update, (
-            receive_messages,
-            check_connection_status,
-        ));
+        app.add_systems(Update, (receive_messages, check_connection_status));
     }
 }
 
@@ -103,14 +105,14 @@ impl Plugin for RabbitMqSenderPlugin {
 
         app.add_event::<SendToRabbitMq>();
 
-        app.add_systems(Startup, (
-            initialize_connection,
-            start_publishing.after(initialize_connection),
-        ));
+        app.add_systems(
+            Startup,
+            (
+                initialize_connection,
+                start_publishing.after(initialize_connection),
+            ),
+        );
 
-        app.add_systems(Update, (
-            send_messages,
-            check_connection_status,
-        ));
+        app.add_systems(Update, (send_messages, check_connection_status));
     }
 }

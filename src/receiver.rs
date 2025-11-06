@@ -16,10 +16,10 @@ use crate::{RabbitMqConfig, RabbitMqConnection};
 pub struct RabbitMqMessage {
     /// The message payload as a JSON string
     pub payload: String,
-    
+
     /// The routing key the message was received with
     pub routing_key: String,
-    
+
     /// The exchange the message came from
     pub exchange: String,
 }
@@ -82,7 +82,10 @@ pub fn start_consuming(
                 continue;
             }
 
-            info!("Starting to consume from queue: {}", config_clone.consume_queue);
+            info!(
+                "Starting to consume from queue: {}",
+                config_clone.consume_queue
+            );
 
             // Start consuming
             let mut consumer = match channel
