@@ -83,7 +83,8 @@ pub fn start_publishing(
             // Wait for connection to be established and create a channel
             let channel = match connection_clone.create_channel().await {
                 Ok(ch) => ch,
-                Err(_) => {
+                Err(e) => {
+                    error!("Failed to create publishing channel: {}", e);
                     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
                     continue;
                 }

@@ -1,6 +1,7 @@
 //! RabbitMQ connection management
 
 use bevy::prelude::*;
+use bevy::time::{Timer, TimerMode};
 use lapin::{Connection, ConnectionProperties};
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -91,13 +92,34 @@ pub fn initialize_connection(mut commands: Commands, config: Res<RabbitMqConfig>
     commands.insert_resource(connection);
 }
 
-/// System that checks connection status
-pub fn check_connection_status(connection: Res<RabbitMqConnection>) {
-    let connection_clone = connection.clone();
+/// Resource to track connection status checking
+#[derive(Resource)]
+pub struct ConnectionStatusTimer {
+    timer: Timer,
+}
 
-    tokio::spawn(async move {
-        if !connection_clone.is_connected().await {
-            warn!("RabbitMQ connection lost");
+impl Default for ConnectionStatusTimer {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(5.0, TimerMode::Repeating),
         }
-    });
+    }
+}
+
+/// System that periodically checks connection status
+pub fn check_connection_status(
+    connection: Res<RabbitMqConnection>,
+    mut timer: ResMut<ConnectionStatusTimer>,
+    time: Res<Time>,
+) {
+    timer.timer.tick(time.delta());
+
+    if timer.timer.just_finished() {
+        let connection_clone = connection.clone();
+        tokio::spawn(async move {
+            if !connection_clone.is_connected().await {
+                warn!("RabbitMQ connection lost");
+            }
+        });
+    }
 }

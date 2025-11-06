@@ -10,7 +10,7 @@
 //!
 //! ```no_run
 //! use bevy::prelude::*;
-//! use bevy_rabbitmq::{RabbitMqPlugin, RabbitMqConfig, RabbitMqMessage};
+//! use bevy_rabbitmq::{RabbitMqPlugin, RabbitMqConfig};
 //!
 //! App::new()
 //!     .add_plugins(MinimalPlugins)
@@ -19,7 +19,6 @@
 //!         uri: "amqp://guest:guest@localhost:5672".to_string(),
 //!         ..Default::default()
 //!     })
-//!     .add_event::<RabbitMqMessage>()
 //!     .run();
 //! ```
 

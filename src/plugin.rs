@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    connection::{check_connection_status, initialize_connection},
+    connection::{check_connection_status, initialize_connection, ConnectionStatusTimer},
     receiver::{receive_messages, start_consuming, RabbitMqMessage},
     sender::{send_messages, start_publishing, SendToRabbitMq},
     RabbitMqConfig,
@@ -49,6 +49,9 @@ impl Plugin for RabbitMqPlugin {
             app.insert_resource(RabbitMqConfig::default());
         }
 
+        // Add resources for connection status tracking
+        app.insert_resource(ConnectionStatusTimer::default());
+
         // Add events
         app.add_event::<RabbitMqMessage>()
             .add_event::<SendToRabbitMq>();
@@ -80,6 +83,8 @@ impl Plugin for RabbitMqReceiverPlugin {
             app.insert_resource(RabbitMqConfig::default());
         }
 
+        app.insert_resource(ConnectionStatusTimer::default());
+
         app.add_event::<RabbitMqMessage>();
 
         app.add_systems(
@@ -102,6 +107,8 @@ impl Plugin for RabbitMqSenderPlugin {
         if !app.world().contains_resource::<RabbitMqConfig>() {
             app.insert_resource(RabbitMqConfig::default());
         }
+
+        app.insert_resource(ConnectionStatusTimer::default());
 
         app.add_event::<SendToRabbitMq>();
 
